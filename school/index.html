@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abstimmungszähler</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            position: relative;
+            text-align: center;
+        }
+        .vote-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            display: inline-block;
+            width: 300px;
+            font-size: 1.5em;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        .vote-section:hover {
+            transform: translateY(-5px);
+        }
+        button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 1em;
+            background-color: #6a829c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 300;
+            color: #444;
+            margin-bottom: 40px;
+        }
+        h3 {
+            font-size: 2em;
+            font-weight: 400;
+            color: #555;
+        }
+        input, select {
+            font-size: 1.2em;
+            padding: 5px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+        }
+        .editable {
+            padding: 5px;
+            cursor: text;
+        }
+        .count {
+            font-size: 2em;
+            color: #666;
+            display: block;
+            transition: transform 0.1s;
+            margin: 20px 0;
+        }
+        .flip {
+            transform: rotateX(180deg);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Teamstimmenzähler</h1>
+
+    <div>
+        <select id="team-count" onchange="updateTeamCount()"></select>
+    </div>
+
+    <div id="vote-sections-container"></div>
+
+    <script>
+        let voteCounts = {};
+
+        function populateTeamCountOptions() {
+            const teamCountSelect = document.getElementById('team-count');
+            for (let i = 1; i <= 15; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} Team${i > 1 ? 's' : ''}`;
+                teamCountSelect.appendChild(option);
+            }
+        }
+
+        function vote(pair) {
+            const countElement = document.getElementById('count-' + pair);
+            const oldCount = voteCounts[pair];
+            voteCounts[pair] += 1;
+            const newCount = voteCounts[pair];
+
+            countElement.textContent = oldCount;
+            countElement.classList.add('flip');
+            setTimeout(() => {
+                countElement.textContent = newCount;
+                countElement.classList.remove('flip');
+            }, 40);
+        }
+
+        function updateTeamCount() {
+            const teamCount = document.getElementById('team-count').value;
+            const voteContainer = document.getElementById('vote-sections-container');
+            voteContainer.innerHTML = '';
+            voteCounts = {};
+
+            for (let i = 1; i <= teamCount; i++) {
+                voteCounts[`pair${i}`] = 0;
+
+                const voteSection = document.createElement('div');
+                voteSection.className = 'vote-section';
+                voteSection.id = `vote-section-${i}`;
+                voteSection.innerHTML = `
+                    <h3 id="pair${i}-name" class="editable" contenteditable="true" onblur="checkName(${i})">Team ${i}</h3>
+                    <p class="count" id="count-pair${i}">0</p>
+                    <button onclick="vote('pair${i}')">Vote</button>
+                `;
+                voteContainer.appendChild(voteSection);
+            }
+        }
+
+        function checkName(pairNumber) {
+            const nameElement = document.getElementById(`pair${pairNumber}-name`);
+            if (nameElement.textContent.trim() === '') {
+                nameElement.textContent = `Team ${pairNumber}`;
+            }
+        }
+
+        populateTeamCountOptions();
+        updateTeamCount(); // Initialize the correct number of teams on page load
+    </script>
+
+</body>
+</html>
